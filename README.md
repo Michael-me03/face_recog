@@ -1,6 +1,6 @@
 # face_recog
-Dieses Projekt wird als Studentisches Projekt umgesetzt, dass den Einsatz von Face Recognition beim Kontaktlosen zahlen erforschen soll. 
+This project is being implemented as a student project to explore the use of facial recognition in contactless payments. 
 
-Hierfür wird eine Anwendung entwickelt die automatisch Kontaktloses Bezahlung per Gesichtserkennung durxhführen soll. Danach wird automatisch eine Buchung erstellt und später über Stripe verbucht.
+For this purpose, an application is being developed that will automatically process contactless payments using facial recognition. A transaction will then be automatically created and later posted via Stripe. 
 
-Für die Gesichtserkennjng wird auf ein anderes GitHub Repository zugegriffen, dass unter der folgenden Lizenz genutzt wird.
+For facial recognition, another GitHub repository will be accessed, which is used under the following license.
