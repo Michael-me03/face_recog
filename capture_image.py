@@ -1,5 +1,6 @@
 import cv2
 import os
+import time
 
 # Ordner vorbereiten
 output_dir = "captured_images"
@@ -15,6 +16,7 @@ if not vc.isOpened():
 print("🎥 Live-Stream läuft. Drücke [s], um ein Bild zu speichern, oder [ESC], um zu beenden.")
 
 while True:
+    time.sleep(1)  # Kurze Pause, um die CPU-Auslastung zu reduzieren
     ret, frame = vc.read()
     if not ret:
         print("❌ Fehler beim Lesen des Kamerabilds.")
