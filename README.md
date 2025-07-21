@@ -14,10 +14,10 @@ cd face_recog
 ### 2. Python Virtual Environment erstellen
 python3 -m venv face_payment_env
 source face_payment_env/bin/activate  
-# Linux/Mac
+### Linux/Mac
 # oder
 face_payment_env\Scripts\activate    
-# Windows
+### Windows
 
 ### 3. Dependencies installieren
 # Erst System-Dependencies 
