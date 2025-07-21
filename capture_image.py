@@ -2,6 +2,24 @@ import face_recognition
 import cv2
 import numpy as np
 import os
+import stripe
+
+stripe.api_key = "API_KEY_HERE"
+amount_eur = 10.0
+
+def charge_recognized_user(amount_eur):
+    try:
+        amount_cents = int(float(amount_eur) * 100)
+        payment_intent = stripe.PaymentIntent.create(
+            amount=amount_cents,
+            currency='eur',
+            payment_method_types=['card'],
+        )
+        print("💳 Stripe PaymentIntent created:", payment_intent['id'])
+        return True, payment_intent['id']
+    except Exception as e:
+        print("❌ Stripe error:", e)
+        return False, str(e)
 
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
@@ -19,17 +37,9 @@ if not os.path.exists(captured_images_dir):
 # Load a sample picture and learn how to recognize it.
 obama_path = os.path.join(captured_images_dir, "/Users/michaelmeier/Coding/face_recog/captured_images/img1.jpg")
 biden_path = os.path.join(captured_images_dir, "/Users/michaelmeier/Coding/face_recog/captured_images/Biden.jpg")
-
-# Check if files exist before loading
-if not os.path.exists(obama_path):
-    print(f"Error: File '{obama_path}' not found!")
-    print("Please add img1.jpg to the captured_images directory.")
-    exit()
-
-if not os.path.exists(biden_path):
-    print(f"Error: File '{biden_path}' not found!")
-    print("Please add img2.jpg to the captured_images directory.")
-    exit()
+martin_path = os.path.join(captured_images_dir, "/Users/michaelmeier/Coding/face_recog/captured_images/Martin.jpg")
+linus_path = os.path.join(captured_images_dir, "/Users/michaelmeier/Coding/face_recog/captured_images/Linus.jpg")
+pascal_path = os.path.join(captured_images_dir, "/Users/michaelmeier/Coding/face_recog/captured_images/Pascal.jpg")
 
 # Load the images with error handling
 try:
@@ -56,17 +66,63 @@ except Exception as e:
     print(f"Error loading Biden image: {e}")
     exit()
 
-# Create arrays of known face encodings and their names
+try:
+    martin_image = face_recognition.load_image_file(martin_path)
+    martin_face_encodings = face_recognition.face_encodings(martin_image)
+    if len(martin_face_encodings) == 0:
+        print("No face found in Martin.jpg")
+        exit()
+    martin_face_encoding = martin_face_encodings[0]
+    print("✓ Martin image loaded successfully")
+except Exception as e:
+    print(f"Error loading Martin image: {e}")
+    exit()
+
+try:
+    linus_image = face_recognition.load_image_file(linus_path)
+    linus_face_encodings = face_recognition.face_encodings(linus_image)
+    if len(linus_face_encodings) == 0:
+        print("No face found in Linus.jpg")
+        exit()
+    linus_face_encoding = linus_face_encodings[0]
+    print("✓ Linus image loaded successfully")
+except Exception as e:
+    print(f"Error loading Linus image: {e}")
+    exit()
+
+try:
+    pascal_image = face_recognition.load_image_file(pascal_path)
+    pascal_face_encodings = face_recognition.face_encodings(pascal_image)
+    if len(pascal_face_encodings) == 0:
+        print("No face found in Pascal.jpg")
+        exit()
+    pascal_face_encoding = pascal_face_encodings[0]
+    print("✓ Pascal image loaded successfully")
+except Exception as e:
+    print(f"Error loading Pascal image: {e}")
+    exit()
+
+# Mindest Abstand von Personen für die Gesichtserkennung
+# Drei/eine sekunden warten, um sicherzustellen, dass es die richtige Person ist
+# Möglichkeit in einer Datenbank neue einträge zu erstellen aber auch zu löschen
+# Clusterung der Gesichter, um zu erkennen, ob es sich um eine Person handelt, die schon mal da war
+# Clustering von mehrren Gesichtern eine Person zuordnen für kontinuieerliches Lernen
+
 known_face_encodings = [
     obama_face_encoding,
-    biden_face_encoding
+    biden_face_encoding,
+    martin_face_encoding,
+    pascal_face_encoding,
+    linus_face_encoding
 ]
 known_face_names = [
     "Michi",
-    "Joe Biden"
+    "Joe Biden",
+    "Prof. Martin",
+    "Pascal",
+    "Linus"
 ]
 
-# Initialize some variables
 face_locations = []
 face_encodings = []
 face_names = []
@@ -84,8 +140,8 @@ while True:
 
     # Only process every other frame of video to save time
     if process_this_frame:
-        # Resize frame of video to 1/4 size for faster face recognition processing
-        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+        # Resize frame of video to 25% size for faster face recognition processing
+        small_frame = cv2.resize(frame, (0, 0), fx=0.10, fy=0.10)
 
         # Convert the image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
         rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
@@ -130,10 +186,10 @@ while True:
     # Display the results
     for (top, right, bottom, left), name in zip(face_locations, face_names):
         # Scale back up face locations since the frame we detected in was scaled to 1/4 size
-        top *= 4
-        right *= 4
-        bottom *= 4
-        left *= 4
+        top *= 10
+        right *= 10
+        bottom *= 10
+        left *= 10
 
         # Draw a box around the face
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
