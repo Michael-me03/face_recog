@@ -3,6 +3,10 @@ import cv2
 import numpy as np
 import os
 import stripe
+import time
+
+recent_matches = {}
+verification_time = 3
 
 stripe.api_key = "API_KEY_HERE"
 amount_eur = 10.0
@@ -149,7 +153,31 @@ while True:
         # Find all the faces and face encodings in the current frame of video
         try:
             face_locations = face_recognition.face_locations(rgb_small_frame, model="hog")
+
+            # Check if faces are too close together
+            min_distance_between_faces_px = 50
+            if len(face_locations) > 1:
+                distances = []
+                for i in range(len(face_locations)):
+                    for j in range(i + 1, len(face_locations)):
+                        top1, right1, bottom1, left1 = face_locations[i]
+                        top2, right2, bottom2, left2 = face_locations[j]
+                        distance = np.sqrt((top1 - top2) ** 2 + (left1 - left2) ** 2)
+                        distances.append(distance)
+                if any(d < min_distance_between_faces_px for d in distances):
+                    print("⛔️ Faces too close together — skipping frame")
+                    face_encodings = []
+                    face_locations = []
             
+            # Check if face is too far away from camera
+            min_face_height = 100
+            if len(face_locations) > 0:
+                face_heights = [bottom - top for top, right, bottom, left in face_locations]
+                if any(height < min_face_height for height in face_heights):
+                    print("⛔️ Face too small — skipping frame")
+                    face_encodings = []
+                    face_locations = []
+
             # Only try to get encodings if we found faces
             if face_locations:
                 face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations, num_jitters=1)
@@ -164,6 +192,41 @@ while True:
         face_names = []
         for face_encoding in face_encodings:
             # See if the face is a match for the known face(s)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
             try:
                 matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=0.6)
                 name = "Unknown"
@@ -173,8 +236,15 @@ while True:
                 best_match_index = np.argmin(face_distances)
                 
                 if matches[best_match_index] and face_distances[best_match_index] < 0.6:
-                    name = known_face_names[best_match_index]
-                    
+                    matched_name = known_face_names[best_match_index]
+                    now = time.time()
+                    last_seen = recent_matches.get(matched_name, 0)
+                    if now - last_seen < verification_time:
+                        name = matched_name
+                        recent_matches[matched_name] = now
+                    else:
+                        name = "Verifying... (wait 3 seconds)"
+
             except Exception as e:
                 print(f"Error comparing faces: {e}")
                 name = "Unknown"
@@ -208,5 +278,6 @@ while True:
 
 # Release handle to the webcam
 video_capture.release()
+
 cv2.destroyAllWindows()
 print("Face recognition stopped.")
