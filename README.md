@@ -32,3 +32,7 @@ brew install cmake
 # Python-Pakete aus requirements.txt installieren
 pip install --upgrade pip
 pip install -r requirements.txt
+
+# Product Recognition
+Implementation of the product recognition algorithm into an IoT Environment of the following Repository:
+https://github.com/lucamarini22/Product-Recognition-on-Store-Shelves.
